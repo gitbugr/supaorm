@@ -32,7 +32,7 @@ export const TABLES = {
 
 ```js
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Handler, groomData, mapNameAndIdToSelectValues} from "./formHandler";
+import {Handler, groomData, mapNameAndIdToSelectValues} from "./handler";
 import {Button, Card, Col, Form, Input, InputNumber, message, Popconfirm, Row, Space, Spin, Tooltip} from "antd";
 import {TABLES} from "./tableData";
 import {supabase} from './api';
