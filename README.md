@@ -4,9 +4,9 @@ An orm-like library for easier working with relational tables via supabase.
 
 This makes using forms much easier, allowing you to nest your data like an ODM in line with relations.
 
-Warning: This is more of a concept than a finished library.
+Warning: This is more of a concept than a finished library. It works, but I think there could be a better approach
 
-## Table Structure Setup
+### Table Structure Setup
 
 ```js
 import {TABLE_TYPES} from "../createInsertOrUpdateFunction";
@@ -27,7 +27,8 @@ export const TABLES = {
 ```
 
 
-## Example Component (React)
+### Example Component (React)
+
 
 ```js
 import React, {useCallback, useEffect, useRef, useState} from "react";
@@ -110,3 +111,5 @@ const ProfileEditComponent = () => {
     );
 }
 ```
+
+Licence: MIT
