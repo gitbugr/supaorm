@@ -83,7 +83,7 @@ const ProfileEditComponent = () => {
         const profileFieldGroup = profileHandler.current.getFieldGroup(TABLES.profiles.name);
         profileFieldGroup.newData = fields;
         // submit form
-        await profileFormHandler.current.submit();
+        await profileHandler.current.submit();
 
         // get id of new record
         const id = profileFieldGroup.results?.inserts[fields.id]?.id;
