@@ -2,7 +2,7 @@
 
 An orm-like library for easier working with relational tables via supabase.
 
-This makes using forms much easier, allowing you to nest your data like an ODM in line with relations.
+This makes using forms much nicer (more modular) than the spaghetti code than ensues, allowing you to nest your data like an ODM in line with relations.
 
 Warning: This is more of a concept than a finished library. It works, but I think there could be a better approach
 
