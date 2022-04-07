@@ -1,4 +1,4 @@
-# SupaODM (pre-alpha)
+# SupaORM (pre-alpha)
 
 An orm-like library for easier working with relational tables via supabase.
 
