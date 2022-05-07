@@ -1,25 +1,26 @@
 import {deleteFromDotNotation, getFromDotNotation} from "./utils/objectUtils";
 import {murmurhash3} from "./utils/murmur";
 
+export const TABLE_TYPES = {
+    entity: 'ENTITY',
+    join: 'JOIN',
+}
+
 export const CHANGE_TYPES = {
     insert: 'INSERT',
     update: 'UPDATE',
 }
+
 // noinspection JSUnresolvedVariable
 export class Handler
 {
     #fieldGroups = {};
-    #supabase = {};
-
-    constructor(supabase) {
-        this.#supaase = supabase;
-    }
 
     /**
      * @param fieldGroup {FieldGroup}
      */
     addFieldGroup(fieldGroup) {
-        fieldGroup.formHandler = this;
+        fieldGroup.handler = this;
         this.#fieldGroups[fieldGroup.tableData.name] = fieldGroup;
     }
 
@@ -105,12 +106,8 @@ export const groomData = async (form, originalData = {}, specialKeys = {}, remov
     };
 }
 
+// noinspection JSUnusedGlobalSymbols
 export const mapNameAndIdToSelectValues = (values) => values.map(value => ({value: value.id, label: value.name}));
-
-export const TABLE_TYPES = {
-    entity: 'ENTITY',
-    join: 'JOIN',
-}
 
 export const NEW_ROW_PREFIX = 'new_';
 
@@ -183,7 +180,10 @@ export const createDbActionFunc = (supabase, table, destructive = false) => {
     }
 }
 
-const getSingularFromPluralString(pluralString) => {
+// noinspection JSUnusedLocalSymbols
+export const supabaseDriver = (supabase) => (tableStructure) => createDbActionFunc(supabase, tableStructure);
+
+const getSingularFromPluralString = (pluralString) => {
     if (pluralString.slice(pluralString.length - 3) === 'ies') {
         return pluralString.slice(0, pluralString.length - 1);
     }
@@ -196,7 +196,7 @@ const getSingularFromPluralString(pluralString) => {
     return pluralString;
 };
 
-const getPluralFromIdString(idString) => {
+const getPluralFromIdString = (idString) => {
     if (idString.slice(idString.length - 3) === '_id') {
         const noIdSuffix = idString.slice(0, idString.length - 3);
         return noIdSuffix[noIdSuffix.length - 1] === 's' ? noIdSuffix + 'es' : noIdSuffix + 's';
@@ -204,39 +204,42 @@ const getPluralFromIdString(idString) => {
     return idString;
 };
 
-const makeNestedFieldGroup(tableKey, tableMappings, supabase, exclude = null) => {
-    const tableStrucure = tableMappings[tableKey];
-    const tableKeyIdSuffix = `${getSingularFromPluralString(tableStrucure.name)}_id`
-    const fieldGroup = new FieldGroup(tableStrucure, createDbActionFunc(supabase, tableStrucure));
+const makeNestedFieldGroup = (tableKey, tableMappings, driver, exclude = null) => {
+    const tableStructure = tableMappings[tableKey];
+    const tableKeyIdSuffix = `${getSingularFromPluralString(tableStructure.name)}_id`
+    const fieldGroup = new FieldGroup(tableStructure, driver(tableStructure));
     let childFieldGroup;
-    if (tableStrucure.m2o) {
-        for (const [key, value] in Object.entries(tableStrucure.m2o)) {
+    // noinspection JSUnresolvedVariable
+    if (tableStructure.m2o) {
+        for (const [key, value] in Object.entries(tableStructure.m2o)) {
             if (exclude === value) {
                 continue;
             }
-            childFieldGroup = makeNestedFieldGroup(value, tableMappings, supabase, tableStrucure.name);
+            childFieldGroup = makeNestedFieldGroup(value, tableMappings, driver, tableStructure.name);
             childFieldGroup.addOneToNFieldGroup(fieldGroup, tableKeyIdSuffix);
-            fieldGroup.addManyToOneFiedlGroup(childFieldGroup, getPluralFromIdString(key));
+            fieldGroup.addManyToOneFieldGroup(childFieldGroup, getPluralFromIdString(key));
         }
     }
-    if (tableStrucure.m2m) {
-        for (const [key, value] in Object.entries(tableStrucure.m2m)) {
+    // noinspection JSUnresolvedVariable
+    if (tableStructure.m2m) {
+        for (const [key, value] in Object.entries(tableStructure.m2m)) {
             if (exclude === value) {
                 continue;
             }
-            childFieldGroup = makeNestedFieldGroup(value, tableMappings, supabase, tableStrucure.name);
+            childFieldGroup = makeNestedFieldGroup(value, tableMappings, driver, tableStructure.name);
             fieldGroup.addOneToNFieldGroup(childFieldGroup, getPluralFromIdString(key));
         }
     }
     return fieldGroup;
 }
 
-export const makeHandler(tableKey, tableMappings, supabase) => {
-    const handler = new Handler(supabase);
-    handler.addFieldGroup(makeNestedFieldGroup(tableKey, tableMappings, supabase));
+export const makeHandler = (tableKey, tableMappings, driver) => {
+    const handler = new Handler();
+    handler.addFieldGroup(makeNestedFieldGroup(tableKey, tableMappings, driver));
     return handler;
 }
 
+// noinspection JSUnresolvedVariable
 export class FieldGroup
 {
     tableData = null;
@@ -294,6 +297,7 @@ export class FieldGroup
         this.manyToNGroups[relationalKey] = fieldGroup;
         this._children.push(fieldGroup);
         if (dataKey) {
+            // noinspection JSUnusedGlobalSymbols
             this.siblingDataKey = dataKey;
         }
     }

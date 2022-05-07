@@ -1,10 +1,10 @@
-# SupaODM (pre-alpha)
+# SupaORM (pre-alpha)
 
-An orm-like library for easier working with relational tables via supabase.
+A lightweight orm-like library for easier working with relational tables via supabase.
 
 This makes using forms much easier, allowing you to nest your data like an ODM in line with relations.
 
-Warning: This is more of a concept than a finished library.
+Warning: At this stage, supaorm is more of a concept than a finished library.
 
 ## Table Structure Setup
 
@@ -32,13 +32,13 @@ export const TABLES = {
 ```js
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import {supabase} from './api';
-import {makeHandler, groomData} from "supaorm";
+import {makeHandler, supabaseDriver, groomData} from "supaorm";
 import {TABLES} from "./tableData";
 import {Form, Input} from "antd";
 
 const ProfileEditComponent = () => {
     /** create handler for profile */
-    const profileHandler = useRef(makeHandler('profiles', TABLES, supabase));
+    const profileHandler = useRef(makeHandler('profiles', TABLES, supabaseDriver(supabase)));
 
     /** handle form submit */
     const submitForm = async () => {
