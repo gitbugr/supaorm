@@ -2,11 +2,11 @@
 
 A lightweight orm-like library for easier working with relational tables via supabase.
 
-This makes using forms much easier, allowing you to nest your data like an ODM in line with relations.
+This makes using forms much nicer (more modular) than the spaghetti code than ensues, allowing you to nest your data like an ODM in line with relations.
 
 Warning: At this stage, supaorm is more of a concept than a finished library.
 
-## Table Structure Setup
+### Table Structure Setup
 
 ```js
 import {TABLE_TYPES} from "supaorm";
@@ -27,14 +27,14 @@ export const TABLES = {
 ```
 
 
-## Example Component (React)
+### Example Component (React)
+
 
 ```js
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import {supabase} from './api';
-import {makeHandler, supabaseDriver, groomData} from "supaorm";
+import {Handler, groomData, mapNameAndIdToSelectValues} from "./handler";
+import {Button, Card, Col, Form, Input, InputNumber, message, Popconfirm, Row, Space, Spin, Tooltip} from "antd";
 import {TABLES} from "./tableData";
-import {Form, Input} from "antd";
 
 const ProfileEditComponent = () => {
     /** create handler for profile */
@@ -58,7 +58,7 @@ const ProfileEditComponent = () => {
         const profileFieldGroup = profileHandler.current.getFieldGroup(TABLES.profiles.name);
         profileFieldGroup.newData = fields;
         // submit form
-        await profileFormHandler.current.submit();
+        await profileHandler.current.submit();
 
         // get id of new record
         const id = profileFieldGroup.results?.inserts[fields.id]?.id;
@@ -86,3 +86,5 @@ const ProfileEditComponent = () => {
     );
 }
 ```
+
+Licence: MIT
