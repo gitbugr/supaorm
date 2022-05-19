@@ -1,15 +1,15 @@
 # SupaORM (pre-alpha)
 
-An orm-like library for easier working with relational tables via supabase.
+A lightweight orm-like library for easier working with relational tables via supabase.
 
 This makes using forms much nicer (more modular) than the spaghetti code than ensues, allowing you to nest your data like an ODM in line with relations.
 
-Warning: This is more of a concept than a finished library. It works, but I think there could be a better approach
+Warning: At this stage, supaorm is more of a concept than a finished library.
 
 ### Table Structure Setup
 
 ```js
-import {TABLE_TYPES} from "../createInsertOrUpdateFunction";
+import {TABLE_TYPES} from "supaorm";
 
 export const TABLES = {
     profiles: { name: 'profiles', type: TABLE_TYPES.entity, get m2o() {
@@ -35,35 +35,10 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import {Handler, groomData, mapNameAndIdToSelectValues} from "./handler";
 import {Button, Card, Col, Form, Input, InputNumber, message, Popconfirm, Row, Space, Spin, Tooltip} from "antd";
 import {TABLES} from "./tableData";
-import {supabase} from './api';
 
 const ProfileEditComponent = () => {
     /** create handler for profile */
-    const profileHandler = useRef(new Handler(supabase));
-
-    /** set up field groups */
-    useEffect(() => {
-        const profileFieldGroup = new FieldGroup(TABLES.profiles, createDbActionFunc(TABLES.profiles));
-        // has O2O (one to one) relationship to address table
-        profileFieldGroup.addOneToNFieldGroup(new FieldGroup(TABLES.address, createDbActionFunc(TABLES.address)), 'address', 'address_id');
-
-        // Has O2M (one to many) relationship with contacts table
-        const contactFieldGroup = new FieldGroup(TABLES.contacts, createDbActionFunc(TABLES.contacts))
-        contactFieldGroup.addManyToOneFieldGroup(profileFieldGroup, 'profile_id')
-        profileFieldGroup.addOneToNFieldGroup(contactFieldGroup, 'contacts');
-
-        // Has M2M (many to many) relationship with areas table (via profile_areas table)
-        const areasFieldGroup = new FieldGroup(TABLES.areas, createDbActionFunc(TABLES.areas));
-        profileFieldGroup.addOneToNFieldGroup(areasFieldGroup, 'areas');
-
-        const profileAreasFieldGroup = new FieldGroup(TABLES.profileAreas, createDbActionFunc(TABLES.profileAreas, true));
-        profileAreasFieldGroup.addManyToOneFieldGroup(profileFieldGroup, 'profile_id');
-        profileAreasFieldGroup.addManyToOneFieldGroup(areasFieldGroup, 'area_id');
-        profileFieldGroup.addOneToNFieldGroup(profileAreasFieldGroup, 'profileAreas');
-
-        // Add root level FieldGroup to Handler
-        profileHandler.current.addFieldGroup(profileFieldGroup);
-    }, []);
+    const profileHandler = useRef(makeHandler('profiles', TABLES, supabaseDriver(supabase)));
 
     /** handle form submit */
     const submitForm = async () => {
@@ -79,7 +54,7 @@ const ProfileEditComponent = () => {
             areas: (fields) => fields.areas?.map(areaId => areas.find(area => area.id === areaId)),
         });
 
-        // set data to FieldGroup
+        // set data to nested FieldGroup
         const profileFieldGroup = profileHandler.current.getFieldGroup(TABLES.profiles.name);
         profileFieldGroup.newData = fields;
         // submit form
